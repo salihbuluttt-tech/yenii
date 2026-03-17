@@ -1,4 +1,6 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import { 
   History, 
   Send, 
@@ -8,14 +10,18 @@ import {
   Lock,
   Download
 } from 'lucide-react';
+import { ShopierModal } from '@/components/ui/ShopierModal';
 
 export const OperationGuide = () => {
+  const [isShopierOpen, setIsShopierOpen] = useState(false);
+
   const steps = [
     {
       number: "01",
       title: "KODU BAŞLATIN",
       description: "Ödeme yaparak Tek Seferlik İşlem Kodu satın alın. Bu kod sizin dijital anahtarınızdır ve 24 saat geçerlidir.",
-      Icon: History
+      Icon: History,
+      action: () => setIsShopierOpen(true)
     },
     {
       number: "02",
@@ -39,6 +45,8 @@ export const OperationGuide = () => {
 
   return (
     <section className="py-24 bg-white text-[#0a0a14] rounded-[3rem_3rem_0_0] relative overflow-hidden">
+      <ShopierModal isOpen={isShopierOpen} onClose={() => setIsShopierOpen(false)} />
+      
       <div className="container mx-auto px-6 space-y-20 relative z-10">
         <div className="flex justify-between items-center border-b border-[#0a0a14]/5 pb-12">
           <div className="space-y-4">
@@ -52,14 +60,18 @@ export const OperationGuide = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16">
           {steps.map((step, index) => (
-            <div key={index} className="flex gap-8 group">
+            <div 
+              key={index} 
+              className={`flex gap-8 group ${step.action ? 'cursor-pointer' : ''}`}
+              onClick={step.action}
+            >
               <div className="flex-shrink-0">
                 <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white text-2xl font-black shadow-xl shadow-primary/20 transition-transform group-hover:scale-105">
                   {step.number}
                 </div>
               </div>
               <div className="space-y-4">
-                <h3 className="text-3xl font-black tracking-tight">{step.title}</h3>
+                <h3 className="text-3xl font-black tracking-tight group-hover:text-primary transition-colors">{step.title}</h3>
                 <p className="text-[#0a0a14]/60 text-lg leading-relaxed font-bold max-w-md">
                   {step.description}
                 </p>
@@ -81,8 +93,11 @@ export const OperationGuide = () => {
               İşleminiz bittikten sonra veya 24 saat geçtiğinde tüm veriler kalıcı olarak silinir. Lütfen raporunuzu indirmeyi unutmayın.
             </p>
           </div>
-          <button className="px-8 py-5 bg-white text-[#0a0a14] font-black rounded-2xl flex items-center gap-3 hover:bg-white/90 active:scale-95 transition-all shadow-2xl">
-            <Download className="w-5 h-5" /> RAPORU İNDİR
+          <button 
+            onClick={() => setIsShopierOpen(true)}
+            className="px-8 py-5 bg-white text-[#0a0a14] font-black rounded-2xl flex items-center gap-3 hover:bg-white/90 active:scale-95 transition-all shadow-2xl"
+          >
+            <Download className="w-5 h-5" /> ŞİMDİ KOD AL
           </button>
         </div>
       </div>
