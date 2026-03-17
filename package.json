@@ -9,13 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "firebase": "^12.10.0",
-    "firebase-admin": "^13.7.0",
+    "firebase-admin": "^10.3.0",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^0.577.0",
-    "next": "15.1.7",
+    "next": "^15.5.13",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-firebase-hooks": "^5.1.1"
+    "react-firebase-hooks": "^5.1.1",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -26,7 +29,7 @@
     "typescript": "^5"
   },
   "engines": {
-    "node": "20"
+    "node": ">=20.0.0"
   },
   "type": "commonjs"
 }
