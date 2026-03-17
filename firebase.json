@@ -1,0 +1,8 @@
+{
+  "apphosting": {
+    "rootDirectory": "/",
+    "settings": {
+      "nodeRedistribution": true
+    }
+  }
+}
