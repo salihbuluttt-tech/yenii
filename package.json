@@ -2,12 +2,13 @@
   "name": "yeni",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+ "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "run": "next start -p 8080"  // <--- BU SATIRI EKLE
+},
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.1",
     "autoprefixer": "^10.4.27",
@@ -34,5 +35,5 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "type": "commonjs"
+  
 }
