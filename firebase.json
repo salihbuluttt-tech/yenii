@@ -1,8 +1,5 @@
 {
   "apphosting": {
-    "rootDirectory": "/",
-    "settings": {
-      "nodeRedistribution": true
-    }
+    "rootDirectory": "./"
   }
 }
