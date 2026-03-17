@@ -1,13 +1,5 @@
 {
-  "hosting": {
-    "public": ".next",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
-  },
   "apphosting": {
-    "rootDirectory": "./"
+    "rootDirectory": "."
   }
 }
