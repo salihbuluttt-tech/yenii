@@ -16,7 +16,7 @@ import {
   ShieldCheck,
   ChevronRight
 } from 'lucide-react';
-import { collection, query, getDocs, addDoc, deleteDoc, doc, serverTimestamp, orderBy, limit } from 'firebase/firestore';
+import { collection, query, getDocs, addDoc, deleteDoc, doc, serverTimestamp, limit, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface CodeEntry {
@@ -33,6 +33,7 @@ export default function CodeManagement() {
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -40,11 +41,10 @@ export default function CodeManagement() {
   }, []);
 
   const fetchCodes = async () => {
-    if (loading) return;
     setLoading(true);
     try {
-      // Not: Sadece createdAt alanı olan dökümanlar için query çalışır.
-      // Eğer bir dökümanın createdAt alanı yoksa listede gözükmez.
+      // Not: Sadece createdAt alanı olan dökümanlar için orderBy çalışır.
+      // Bu yüzden önce dökümanları çekip, client-side sorting yapıyoruz (daha güvenli).
       const q = query(collection(db, "codes"), limit(100));
       const querySnapshot = await getDocs(q);
       const codeList = querySnapshot.docs.map(doc => ({
@@ -52,8 +52,12 @@ export default function CodeManagement() {
         ...doc.data()
       })) as CodeEntry[];
       
-      // Client-side sorting as a fallback
-      codeList.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      // En yeni kod en üstte gözükecek şekilde sıralama (Garantili)
+      codeList.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+      });
       
       setCodes(codeList);
     } catch (err) {
@@ -65,6 +69,7 @@ export default function CodeManagement() {
 
   const generateCode = async () => {
     setLoading(true);
+    setSuccessMsg('');
     try {
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       let r1 = '';
@@ -72,7 +77,8 @@ export default function CodeManagement() {
       const r2 = chars.charAt(Math.floor(Math.random() * chars.length));
       const result = `TB-${r1}-${r2}`;
       
-      await addDoc(collection(db, "codes"), {
+      // Firebase'e veri ekleme
+      const docRef = await addDoc(collection(db, "codes"), {
         code: result,
         user: 'YÖNETİCİ GENEL',
         status: 'Aktif',
@@ -80,10 +86,15 @@ export default function CodeManagement() {
         createdAt: serverTimestamp()
       });
       
-      await fetchCodes();
+      if (docRef.id) {
+         setSuccessMsg(`ANAHTAR ÜRETİLDİ: ${result}`);
+         await fetchCodes();
+         // Listeyi temiz gösterip yeni kodu öne çıkarmak için 3 saniye sonra mesajı kaldır
+         setTimeout(() => setSuccessMsg(''), 5000);
+      }
     } catch (err) {
       console.error("Kod üretim hatası:", err);
-      alert("Kod üretilemedi!");
+      alert("Hata: Kod veritabanına yazılamadı. Bağlantıyı kontrol edin.");
     } finally {
       setLoading(false);
     }
@@ -105,7 +116,6 @@ export default function CodeManagement() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    // Simple notification can be added here
   };
 
   const filteredCodes = codes.filter(c => 
@@ -135,10 +145,18 @@ export default function CodeManagement() {
             disabled={loading}
             className="btn-primary py-4 px-8 text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-3 shadow-3xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
           >
-            <Plus className="w-4 h-4" /> YENİ ANAHTAR ÜRET
+            {loading ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : <Plus className="w-4 h-4" />} YENİ ANAHTAR ÜRET
           </button>
         </div>
       </div>
+
+      {/* Success Notification Area */}
+      {successMsg && (
+        <div className="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400 text-xs font-black uppercase tracking-widest animate-in slide-in-from-top-4 flex items-center gap-4">
+           <ShieldCheck className="w-6 h-6 shrink-0" />
+           {successMsg} — LİSTE GÜNCELLENDİ.
+        </div>
+      )}
 
       {/* Info Status */}
       <div className="bg-primary/5 border border-primary/20 p-6 rounded-[2rem] flex flex-col md:flex-row items-center gap-6 group">
@@ -147,7 +165,7 @@ export default function CodeManagement() {
           </div>
           <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] flex-1 text-center md:text-left leading-relaxed">
             SİSTEM ÜZERİNDEN ÜRETİLEN TÜM ANAHTARLAR <span className="text-primary italic">24 SAATLİK RAM DÖNGÜSÜNE</span> TABİDİR. 
-            SÜRESİ DOLAN ANAHTARLAR ANALİZ MODÜLLERİNE ERİŞİM SAĞLAYAMAZ VE SİSTEMDEN KALICI OLARAK TEMİZLENİR.
+            SÜRESİ DOLAN ANAHTARLAR ANALİZ MODÜLLERİNE ERİŞİM SAĞLAYAMAZ.
           </p>
           <div className="flex items-center gap-2 px-4 py-2 bg-black/40 rounded-full border border-white/5">
              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -157,8 +175,8 @@ export default function CodeManagement() {
 
       {/* Table Card */}
       <div className="glass-card overflow-hidden bg-[#0a0a0c] border-white/5 shadow-3xl">
-        {/* Table Controls */}
-        <div className="p-8 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row items-center gap-6">
+        {/* Search Bar */}
+        <div className="p-8 border-b border-white/5 bg-white/[0.02] flex items-center gap-6">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
             <input 
@@ -169,20 +187,6 @@ export default function CodeManagement() {
               className="w-full bg-black/40 border border-white/10 rounded-2xl pl-16 pr-8 py-5 text-[10px] font-black tracking-[0.3em] placeholder:text-white/10 focus:outline-none focus:border-primary/40 transition-all uppercase text-white shadow-inner"
             />
           </div>
-          <div className="flex gap-4 w-full md:w-auto">
-             <button className="flex-1 md:flex-none px-6 py-5 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 group">
-               <Filter className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
-               <span className="text-[10px] font-black text-white/20 group-hover:text-white tracking-widest uppercase">Filtrele</span>
-             </button>
-          </div>
-        </div>
-
-        {/* Table Header (Desktop) */}
-        <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-4 bg-white/[0.01] border-b border-white/5 text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">
-           <div className="col-span-4 pl-12">ANAHTAR BİLGİSİ</div>
-           <div className="col-span-3 text-center">OLUŞTURULMA</div>
-           <div className="col-span-3 text-center">DURUM / PROTOKOL</div>
-           <div className="col-span-2 text-right">EYLEMLER</div>
         </div>
 
         {/* Table Content */}
@@ -202,7 +206,7 @@ export default function CodeManagement() {
             <div key={code.id} className="p-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-center hover:bg-white/[0.01] transition-all group">
               
               {/* Key Info Column */}
-              <div className="md:col-span-4 flex items-center gap-6">
+              <div className="md:col-span-12 lg:col-span-5 flex items-center gap-6">
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500 shadow-2xl ${
                   code.status === 'Aktif' ? 'bg-primary/10 border-primary/20 group-hover:rotate-[15deg]' : 'bg-white/5 border-white/5'
                 }`}>
@@ -222,39 +226,31 @@ export default function CodeManagement() {
                 </div>
               </div>
 
-              {/* Time Column */}
-              <div className="md:col-span-3 text-center">
-                 <div className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 flex items-center justify-center gap-2">
-                    <Clock className="w-3 h-3" /> SYNC_TIME
-                 </div>
-                 <div className="font-mono text-xs font-black text-white/40 tracking-widest uppercase">
-                    {code.createdAt ? new Date(code.createdAt.seconds * 1000).toLocaleTimeString() : 'INIT_TIME'}
-                 </div>
-              </div>
+              {/* Status and Actions Row for Mobile/Desktop */}
+              <div className="md:col-span-12 lg:col-span-7 flex flex-wrap items-center justify-end gap-10">
+                <div className="text-right">
+                   <div className="text-[9px] font-black text-white/10 uppercase tracking-widest mb-1 flex items-center justify-end gap-2">
+                      <Clock className="w-3 h-3" /> SYNC_TIME
+                   </div>
+                   <div className="font-mono text-[10px] font-black text-white/40 tracking-widest uppercase">
+                      {code.createdAt ? new Date(code.createdAt.seconds * 1000).toLocaleString() : 'PENDING...'}
+                   </div>
+                </div>
 
-              {/* Status Column */}
-              <div className="md:col-span-3 flex justify-center">
                 <div className={`px-6 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest border transition-all flex items-center gap-3 ${
                   code.status === 'Aktif' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-xl shadow-emerald-500/5' : 
                   'bg-rose-500/10 border-rose-500/20 text-rose-500 opacity-40'
                 }`}>
-                  <div className={`w-1.5 h-1.5 rounded-full ${code.status === 'Aktif' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`}></div>
                   {code.status}
                 </div>
-              </div>
 
-              {/* Actions Column */}
-              <div className="md:col-span-2 flex items-center justify-end gap-3">
-                  <button 
-                    onClick={() => handleDeleteCode(code.id, code.code)}
-                    disabled={loading}
-                    className="p-4 bg-rose-500/5 text-rose-500/40 border border-rose-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white hover:border-transparent shadow-2xl shadow-rose-500/20 disabled:opacity-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  <button className="p-4 bg-white/5 text-white/20 border border-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all hover:text-white">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                <button 
+                  onClick={() => handleDeleteCode(code.id, code.code)}
+                  disabled={loading}
+                  className="p-4 bg-rose-500/5 text-rose-500/40 border border-rose-500/10 rounded-2xl md:opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white hover:border-transparent"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ))}

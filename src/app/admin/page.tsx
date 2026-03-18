@@ -79,17 +79,21 @@ export default function AdminDashboard() {
       for (let i = 0; i < 4; i++) r1 += chars.charAt(Math.floor(Math.random() * chars.length));
       const newCode = `TB-${r1}-${chars.charAt(Math.floor(Math.random() * chars.length))}`;
       
-      await addDoc(collection(db, "codes"), {
+      const docRef = await addDoc(collection(db, "codes"), {
         code: newCode,
-        user: "Yönetici (Manuel)",
+        user: "Yön. Panel (Hızlı)",
         status: "Aktif",
         payment: "Manuel",
         createdAt: serverTimestamp()
       });
 
-      fetchData();
-    } catch (err) {
+      if (docRef.id) {
+        alert(`KOD ÜRETİLDİ: ${newCode}\nListe Güncelleniyor.`);
+        await fetchData();
+      }
+    } catch (err: any) {
        console.error("Kod üretim hatası:", err);
+       alert("Hata: " + err.message);
     } finally {
       setLoading(false);
     }
