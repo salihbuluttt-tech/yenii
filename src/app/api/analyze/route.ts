@@ -6,8 +6,10 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
     if (!apiKey) {
-      console.error("ANALYSIS_ERROR: API Key is missing in environment");
-      return NextResponse.json({ error: 'Sistem yetkilendirme hatası (API Key Eksik)' }, { status: 500 });
+      console.error("CRITICAL_ERROR: NEXT_PUBLIC_GEMINI_API_KEY is not defined in Environment Variables!");
+      return NextResponse.json({ 
+        error: 'Sistem Yapılandırma Hatası: API Anahtarı Bulunamadı. Lütfen Vercel panelinden veya .env dosyasından anahtarı kontrol edin.' 
+      }, { status: 500 });
     }
 
     // Determine the MIME type (default to image/jpeg if not provided)
