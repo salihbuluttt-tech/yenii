@@ -29,7 +29,15 @@ export default function MutabakatPage() {
   const [selectedRole, setSelectedRole] = useState<'ALICI' | 'SATICI' | null>(null);
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(3600); // Varsayılan 1 saat
-  const [inviteCode, setInviteCode] = useState('INV-' + Math.random().toString(36).substring(2, 7).toUpperCase());
+  const [inviteCode, setInviteCode] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setInviteCode('INV-' + Math.random().toString(36).substring(2, 7).toUpperCase());
+  }, []);
+
+  if (!mounted) return null;
 
   // Kullanıcı Verileri
   const [form, setForm] = useState({

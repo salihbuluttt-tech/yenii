@@ -9,169 +9,175 @@ import {
   ChevronRight,
   Plus,
   RefreshCcw,
-  Zap,
-  CheckCircle2,
-  AlertCircle
+  Zap
 } from 'lucide-react';
-import { collection, query, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, getDocs, addDoc, serverTimestamp, limit, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export default function AdminDashboard() {
-  const [visitorCount, setVisitorCount] = useState(12);
+  const [visitorCount, setVisitorCount] = useState(0);
   const [activeCodes, setActiveCodes] = useState(0);
   const [expiredCodes, setExpiredCodes] = useState(0);
   const [loading, setLoading] = useState(false);
   const [recentActions, setRecentActions] = useState<any[]>([]);
-
-  // Verileri Firebase'den Çekme Fonksiyonu
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // Not: Gerçek veritabanı yapınıza göre burayı güncelleyeceğiz
-      // Şimdilik Firebase bağlantısını test etmek için boş bir deneme yapıyoruz
-      const q = query(collection(db, "codes"));
-      const querySnapshot = await getDocs(q);
-      const codes = querySnapshot.docs.map(doc => doc.data());
-      
-      setActiveCodes(codes.filter(c => c.status === 'Aktif').length || 8);
-      setExpiredCodes(codes.filter(c => c.status === 'Süresi Doldu').length || 45);
-      
-      // Simülasyon verileri (Gerçek veriler gelene kadar)
-      setRecentActions([
-        { user: "salih@kod.com", code: "TB-XJ92-K", time: "23:45:12", status: "Aktif", payment: "Shopier" },
-        { user: "deneme@emlak.com", code: "TB-LL02-M", time: "22:12:05", status: "Süresi Doldu", payment: "Manuel" },
-      ]);
-    } catch (err) {
-      console.error("Veri çekme hatası:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetchData();
-    // Simulate real-time visitor count
+    
+    // Simulate real-time visitor count only on client
     const interval = setInterval(() => {
       setVisitorCount(prev => {
+        const base = prev > 0 ? prev : 12;
         const change = Math.floor(Math.random() * 3) - 1;
-        return Math.max(1, prev + change);
+        return Math.max(1, base + change);
       });
     }, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  // Manuel Kod Üretme Fonksiyonu
-  const handleGenerateCode = async () => {
-    const confirmGen = confirm("Yeni bir manuel kod üretilsin mi?");
-    if (!confirmGen) return;
-
+  const fetchData = async () => {
+    if (loading) return;
     setLoading(true);
     try {
-      const newCode = `TB-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 3).toUpperCase()}`;
+      const q = query(collection(db, "codes"), limit(20));
+      const querySnapshot = await getDocs(q);
+      const codeDocs = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
       
-      await addDoc(collection(db, "codes"), {
-        code: newCode,
-        user: "admin@trust.com",
-        status: "Aktif",
-        payment: "Manuel",
-        createdAt: serverTimestamp()
-      });
+      setActiveCodes(codeDocs.filter((c: any) => c.status === 'Aktif').length);
+      setExpiredCodes(codeDocs.filter((c: any) => c.status === 'Süresi Doldu').length);
+      
+      // Update recent actions with real data
+      const mappedActions = codeDocs.slice(0, 5).map((doc: any) => ({
+        user: doc.user || "Bilinmiyor",
+        code: doc.code || "TB-XXXX-X",
+        time: doc.createdAt ? new Date(doc.createdAt.seconds * 1000).toLocaleTimeString() : '---',
+        status: doc.status || "Aktif",
+        payment: doc.payment || "Dijital"
+      }));
 
-      alert(`Kod Başarıyla Üretildi: ${newCode}`);
-      fetchData(); // Listeyi yenile
+      setRecentActions(mappedActions.length > 0 ? mappedActions : [
+        { user: "Sistem", code: "HOSGELDIN-01", time: "--:--", status: "Aktif", payment: "Sistem" }
+      ]);
+
     } catch (err) {
-      alert("Kod üretilemedi. Firebase izinlerini kontrol edin.");
+      console.error("Dashboard veri hatası:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGenerateCode = async () => {
+    setLoading(true);
+    try {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let r1 = '';
+      for (let i = 0; i < 4; i++) r1 += chars.charAt(Math.floor(Math.random() * chars.length));
+      const newCode = `TB-${r1}-${chars.charAt(Math.floor(Math.random() * chars.length))}`;
+      
+      await addDoc(collection(db, "codes"), {
+        code: newCode,
+        user: "Yönetici (Manuel)",
+        status: "Aktif",
+        payment: "Manuel",
+        createdAt: serverTimestamp()
+      });
+
+      fetchData();
+    } catch (err) {
+       console.error("Kod üretim hatası:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!mounted) return null;
+
   const stats = [
-    { label: "Anlık Ziyaretçi", value: visitorCount, icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { label: "Anlık Ziyaretçi", value: visitorCount || 12, icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
     { label: "Aktif Kodlar", value: activeCodes, icon: Zap, color: "text-primary", bg: "bg-primary/10" },
     { label: "Süresi Dolanlar", value: expiredCodes, icon: Clock, color: "text-rose-400", bg: "bg-rose-500/10" },
-    { label: "Toplam Kazanç", value: "₺2.450", icon: TrendingUp, color: "text-amber-400", bg: "bg-amber-500/10" },
+    { label: "Tahminlenen Hacim", value: "₺" + (activeCodes * 100).toLocaleString(), icon: TrendingUp, color: "text-amber-400", bg: "bg-amber-500/10" },
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-white">Dashboard Overview</h1>
-          <p className="text-white/40 text-sm font-bold uppercase tracking-widest mt-1">Sistem Genel Durumu ve Analizler</p>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">SİSTEM KONTROLÜ</h1>
+          <p className="text-[10px] text-white/30 font-bold uppercase tracking-[0.3em] pl-1 italic">Real-time Admin Analytics & Protocol Buffer</p>
         </div>
         <div className="flex gap-4">
           <button 
             onClick={fetchData}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-white/10 transition-all uppercase tracking-widest text-white disabled:opacity-50"
+            className="group flex items-center gap-2 px-5 py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black hover:bg-white/10 transition-all uppercase tracking-widest text-white/60 disabled:opacity-50"
           >
-            <RefreshCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Verileri Yenile
+            <RefreshCcw className={`w-3 h-3 ${loading ? 'animate-spin text-primary' : 'group-hover:rotate-180 transition-transform duration-500'}`} /> VERİLERİ SORGULA
           </button>
           <button 
             onClick={handleGenerateCode}
             disabled={loading}
-            className="btn-primary py-2 px-4 text-xs font-bold uppercase tracking-widest flex items-center gap-2 disabled:opacity-50"
+            className="px-6 py-3 bg-primary text-black text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50"
           >
-            <Plus className="w-3 h-3" /> Manuel Kod Üret
+            <Plus className="w-4 h-4" /> KOD ÜRET
           </button>
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
-          <div key={idx} className="glass-card p-6 space-y-4">
+          <div key={idx} className="glass-card p-8 space-y-6 bg-white/[0.02] border-white/5 hover:border-white/10 transition-all">
             <div className="flex items-center justify-between">
-              <div className={`p-3 rounded-xl ${stat.bg}`}>
-                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+              <div className={`p-4 rounded-2xl ${stat.bg} border border-white/5`}>
+                <stat.icon className={`w-6 h-6 ${stat.color}`} />
               </div>
-              <div className="text-[10px] font-black text-rose-500 bg-rose-500/10 px-2 py-1 rounded-full">+12%</div>
+              <div className="text-[9px] font-black text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-tighter shadow-inner">LIVE</div>
             </div>
-            <div>
-              <div className="text-2xl font-black text-white">{stat.value}</div>
-              <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</div>
+            <div className="space-y-1">
+              <div className="text-4xl font-black text-white tracking-tighter">{stat.value}</div>
+              <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">{stat.label}</div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Dynamic Code Feed */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="glass-card overflow-hidden">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-              <h3 className="font-black uppercase tracking-widest text-xs flex items-center gap-2 text-white">
-                <Key className="w-4 h-4 text-primary" /> Son İşlemler & Aktif Kodlar
+          <div className="glass-card overflow-hidden bg-[#0a0a0c] border-white/5">
+            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.03]">
+              <h3 className="font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-3 text-white/60">
+                <Key className="w-4 h-4 text-primary" /> SON İŞLEMLER VE AKTİF KODLAR
               </h3>
-              <button className="text-primary text-[10px] font-black tracking-widest hover:underline uppercase">Tümünü Gör</button>
             </div>
             <div className="divide-y divide-white/5">
               {recentActions.map((row, idx) => (
-                <div key={idx} className="p-4 flex items-center justify-between hover:bg-white/[0.01] transition-colors group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center font-bold text-xs text-white/20 group-hover:text-primary transition-colors">
-                      {row.code.split('-')[1].charAt(0)}
+                <div key={idx} className="p-6 flex items-center justify-between hover:bg-white/[0.01] transition-colors group">
+                  <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center font-black text-xs text-white/10 group-hover:text-primary transition-all duration-500">
+                      {row.code?.split('-')[1]?.charAt(0) || 'TB'}
                     </div>
-                    <div>
-                      <div className="text-sm font-bold text-white">{row.user}</div>
-                      <div className="text-[10px] font-black text-primary tracking-widest uppercase">{row.code}</div>
+                    <div className="space-y-1">
+                      <div className="text-sm font-black text-white italic">{row.user}</div>
+                      <div className="text-[10px] font-black text-primary tracking-[0.2em] uppercase">{row.code}</div>
                     </div>
                   </div>
-                  <div className="text-right flex items-center gap-8">
-                    <div>
-                      <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Durum</div>
-                      <div className="text-xs font-mono font-bold text-emerald-400">{row.time}</div>
+                  <div className="flex items-center gap-10">
+                    <div className="text-right hidden sm:block">
+                      <div className="text-[9px] font-black text-white/10 uppercase tracking-widest mb-1">DATA_TIME</div>
+                      <div className="text-xs font-mono font-bold text-white/40">{row.time}</div>
                     </div>
-                    <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter ${
-                      row.status === 'Aktif' ? 'bg-emerald-500/20 text-emerald-400' : 
-                      row.status === 'Süresi Doldu' ? 'bg-rose-500/20 text-rose-400' : 'bg-white/10 text-white/40'
+                    <div className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-tighter border ${
+                      row.status === 'Aktif' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-xl shadow-emerald-500/5' : 
+                      'bg-rose-500/10 border-rose-500/20 text-rose-400 opacity-40'
                     }`}>
                       {row.status}
                     </div>
-                    <ChevronRight className="w-4 h-4 text-white/10 group-hover:text-white transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-white/10 group-hover:text-primary transition-all" />
                   </div>
                 </div>
               ))}
@@ -179,23 +185,27 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Sidebar Analytics */}
         <div className="space-y-6">
-          <div className="glass-card p-6 bg-primary/5 border-primary/20">
-            <h3 className="font-black uppercase tracking-widest text-[10px] text-primary mb-6 flex items-center gap-2">
-              <Zap className="w-4 h-4" /> Sistem Sağlığı
+          <div className="glass-card p-10 bg-primary/5 border-primary/20 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-all" />
+            <h3 className="font-black uppercase tracking-[0.2em] text-[10px] text-primary mb-10 flex items-center gap-3">
+              <Zap className="w-4 h-4" /> CORE PROTOKOL ANALİZİ
             </h3>
             <div className="space-y-6">
               {[
-                { label: "Firebase Database", value: "Aktif", color: "text-emerald-400" },
-                { label: "Shopier Webhook", value: "Beklemede", color: "text-amber-400" },
-                { label: "Güvenlik Duvarı", value: "Güçlü", color: "text-emerald-400" },
+                { label: "Firebase Cluster", value: "HEALTHY", color: "text-emerald-400" },
+                { label: "Analytics Buffer", value: "SYNCED", color: "text-emerald-400" },
+                { label: "Security Layer", value: "ENHANCED", color: "text-primary" },
+                { label: "Memory Storage", value: "RAM-ONLY", color: "text-emerald-400" },
               ].map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center bg-[#0a0a0c] p-4 rounded-xl border border-white/5 shadow-inner">
-                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{item.label}</span>
-                  <span className={`text-[10px] font-black uppercase ${item.color}`}>{item.value}</span>
+                <div key={idx} className="flex justify-between items-center bg-black/40 p-5 rounded-2xl border border-white/5 shadow-inner group hover:border-primary/20 transition-all">
+                  <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em]">{item.label}</span>
+                  <span className={`text-[10px] font-black uppercase italic ${item.color}`}>{item.value}</span>
                 </div>
               ))}
+            </div>
+            <div className="mt-10 p-4 border border-white/5 rounded-2xl bg-black/20 text-[9px] font-bold text-white/20 uppercase tracking-widest text-center leading-relaxed">
+              SİSTEM %100 ÜRETKENLİKLE <br/> ÇALIŞMAYA DEVAM EDİYOR.
             </div>
           </div>
         </div>
@@ -203,4 +213,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { MapPin, Shield, CheckCircle2, Loader2, Navigation, Send, Smartphone } from 'lucide-react';
 
@@ -8,6 +8,13 @@ export default function YerGostermePage() {
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [gpsLocked, setGpsLocked] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const handleLockGps = () => {
     setLoading(true);
@@ -40,11 +47,11 @@ export default function YerGostermePage() {
             <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight leading-[0.9]">
               GPS Mühürlü <br /> <span className="text-amber-400">Teyit Formu</span>
             </h1>
-            <p className="text-white/40 max-w-xl mx-auto font-medium">Konum bazlı teyit ile portföy emniyetinizi saniyeler içinde resmileştirin.</p>
+            <p className="text-white/40 max-w-xl mx-auto font-medium leading-relaxed uppercase text-[10px] tracking-widest italic">Konum bazlı teyit ile portföy emniyetinizi saniyeler içinde resmileştirin.</p>
           </div>
 
           {!completed ? (
-            <div className="glass-card p-8 md:p-12 border-white/5 bg-white/[0.02] space-y-10">
+            <div className="glass-card p-8 md:p-12 border-white/5 bg-white/[0.02] space-y-10 animate-in fade-in duration-500">
               
               {/* GPS Status */}
               <div className={`p-6 rounded-2xl border transition-all flex items-center justify-between ${
@@ -64,7 +71,7 @@ export default function YerGostermePage() {
                  {!gpsLocked && (
                    <button 
                     onClick={handleLockGps}
-                    className="px-6 py-2 bg-amber-500 text-white font-black text-[10px] uppercase tracking-widest rounded-lg hover:bg-amber-600 transition-all"
+                    className="px-6 py-2 bg-amber-500 text-white font-black text-[10px] uppercase tracking-widest rounded-lg hover:bg-amber-600 transition-all active:scale-95"
                    >
                      {loading ? "ARANIYOR..." : "KONUMU SABİTLE"}
                    </button>
@@ -75,18 +82,18 @@ export default function YerGostermePage() {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/40 uppercase tracking-widest pl-1">Emlak Danışmanı</label>
-                    <input type="text" placeholder="Ad Soyad" required className="w-full bg-[#0a0a0c] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-amber-400/50" />
+                    <input type="text" placeholder="Ad Soyad" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-amber-400/50" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/40 uppercase tracking-widest pl-1">Müşteri (Alıcı)</label>
-                    <input type="text" placeholder="Ad Soyad" required className="w-full bg-[#0a0a0c] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-amber-400/50" />
+                    <input type="text" placeholder="Ad Soyad" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-amber-400/50" />
                   </div>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/40 uppercase tracking-widest pl-1">Gayrimenkul Detayı</label>
-                    <textarea placeholder="Adres, Ada Parsel veya Ünite Ref No" rows={4} className="w-full bg-[#0a0a0c] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-amber-400/50"></textarea>
+                    <textarea placeholder="Adres, Ada Parsel veya Ünite Ref No" rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-amber-400/50 resize-none"></textarea>
                   </div>
                 </div>
 
@@ -94,7 +101,7 @@ export default function YerGostermePage() {
                    <button 
                     type="submit"
                     disabled={!gpsLocked || loading}
-                    className="w-full py-5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-2xl shadow-amber-500/20 transition-all flex items-center justify-center gap-3 disabled:opacity-20"
+                    className="w-full py-5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-2xl shadow-amber-500/20 transition-all flex items-center justify-center gap-3 disabled:opacity-20 active:scale-95"
                    >
                      {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-5 h-5" /> FORMULÜ ONAYLA VE GÖNDER</>}
                    </button>
@@ -102,25 +109,25 @@ export default function YerGostermePage() {
               </form>
             </div>
           ) : (
-            <div className="glass-card p-12 text-center space-y-8 border-emerald-500/20 bg-emerald-500/5">
-                <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto border border-emerald-500/40">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+            <div className="glass-card p-12 text-center space-y-10 border-emerald-500/20 bg-emerald-500/5 animate-in zoom-in-95 duration-500 shadow-2xl shadow-emerald-500/5">
+                <div className="w-24 h-24 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto border border-emerald-500/40">
+                  <CheckCircle2 className="w-12 h-12 text-emerald-400" />
                 </div>
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-black text-white uppercase tracking-tight">FORM ONAYLANDI</h2>
-                  <p className="text-white/40 uppercase text-[10px] font-black tracking-widest">Dijital imza ve GPS kanıtı eklendi.</p>
+                <div className="space-y-4">
+                  <h2 className="text-4xl font-black text-white uppercase tracking-tight">FORM ONAYLANDI</h2>
+                  <p className="text-white/40 uppercase text-[10px] font-black tracking-widest italic">Dijital imza ve GPS kanıtı eklendi. Rapora mühür vuruldu.</p>
                 </div>
                 <div className="flex flex-col md:flex-row gap-4 justify-center pt-4">
-                  <div className="p-4 bg-[#0a0a0c] border border-white/5 rounded-2xl text-left flex items-center gap-4">
-                    <Smartphone className="w-8 h-8 text-white/20" />
+                  <div className="p-6 bg-[#0a0a0c] border border-white/5 rounded-[2rem] text-left flex items-center gap-6 shadow-2xl shadow-black/50">
+                    <Smartphone className="w-10 h-10 text-white/10" />
                     <div>
                       <div className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">SMS BİLDİRİMİ</div>
-                      <div className="text-[9px] text-white/30 font-bold uppercase">Müşteriye Doğrulama Linki İletildi.</div>
+                      <div className="text-[10px] text-white/30 font-bold uppercase leading-relaxed">Müşteriye Doğrulama Linki <br /> İletildi. Teyit Alındı.</div>
                     </div>
                   </div>
                 </div>
-                <button onClick={() => setCompleted(false)} className="px-12 py-5 bg-white/5 text-white/40 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all">
-                  YENİ BORDRO
+                <button onClick={() => setCompleted(false)} className="px-16 py-6 bg-white/5 text-white/40 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all shadow-inner">
+                  YENİ FORM OLUŞTUR
                 </button>
             </div>
           )}

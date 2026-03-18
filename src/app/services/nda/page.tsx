@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { FileText, Shield, Download, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
 
 export default function NDAPage() {
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

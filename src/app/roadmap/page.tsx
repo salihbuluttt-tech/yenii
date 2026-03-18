@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
 import { 
   History, 
@@ -18,6 +18,15 @@ import { ShopierModal } from '@/components/ui/ShopierModal';
 
 export default function RoadmapPage() {
   const [isShopierOpen, setIsShopierOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  if (!mounted) return null;
 
   const steps = [
     {

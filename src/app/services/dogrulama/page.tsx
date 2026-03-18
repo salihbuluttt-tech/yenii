@@ -1,12 +1,20 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { ShieldCheck, Upload, FileText, CheckCircle2, Loader2, Sparkles, Building2 } from 'lucide-react';
 
 export default function DogrulamaPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const startValidation = () => {
     setLoading(true);
