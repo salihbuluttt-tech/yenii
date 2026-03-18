@@ -1,0 +1,19 @@
+[debug] [2026-03-18T15:28:15.514Z] ----------------------------------------------------------------------
+[debug] [2026-03-18T15:28:15.522Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\k\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-03-18T15:28:15.523Z] CLI Version:   15.10.1
+[debug] [2026-03-18T15:28:15.523Z] Platform:      win32
+[debug] [2026-03-18T15:28:15.523Z] Node Version:  v24.14.0
+[debug] [2026-03-18T15:28:15.524Z] Time:          Wed Mar 18 2026 18:28:15 GMT+0300 (Türkiye Standart Saati)
+[debug] [2026-03-18T15:28:15.524Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-18T15:28:19.514Z] Object "/apphosting" in "firebase.json" is missing required property: {"missingProperty":"backendId"}
+[debug] [2026-03-18T15:28:19.515Z] Field "/apphosting" in "firebase.json" is possibly invalid: must be array
+[debug] [2026-03-18T15:28:19.515Z] Field "/apphosting" in "firebase.json" is possibly invalid: must match a schema in anyOf
+[debug] [2026-03-18T15:28:19.519Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-18T15:28:19.519Z] > authorizing via signed-in user (salihbulutt@gmail.com)
+[debug] [2026-03-18T15:28:19.520Z] [iam] checking project emlak-849cf for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-18T15:28:19.521Z] Checked if tokens are valid: true, expires at: 1773848922888
+[debug] [2026-03-18T15:28:19.521Z] Checked if tokens are valid: true, expires at: 1773848922888
+[debug] [2026-03-18T15:28:19.522Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/emlak-849cf:testIamPermissions [none]
+[debug] [2026-03-18T15:28:19.522Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/emlak-849cf:testIamPermissions  x-goog-user-project=emlak-849cf
+[debug] [2026-03-18T15:28:19.522Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/emlak-849cf:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
