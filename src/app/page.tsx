@@ -48,27 +48,8 @@ export default function Home() {
           </div>
 
           {/* Sağ: Giriş veya Profil Kartı */}
-          <div className="w-full max-w-md">
-            {user ? (
-              <div className="glass-card p-10 border-emerald-500/20 bg-emerald-500/5 text-center space-y-6 shadow-2xl animate-in zoom-in-95 duration-500">
-                <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
-                   <Shield className="w-8 h-8 text-emerald-400" />
-                </div>
-                <div className="space-y-1">
-                   <h3 className="text-xl font-black text-white uppercase italic">Sistem Aktif</h3>
-                   <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{user.email}</p>
-                </div>
-                {user.email === 'admin@trustbridge.com' && (
-                  <button 
-                    onClick={() => router.push('/admin')}
-                    className="w-full py-5 bg-white text-black font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl shadow-3xl hover:bg-primary transition-all flex items-center justify-center gap-3 animate-pulse ring-4 ring-primary/10"
-                  >
-                    YÖNETİCİ PANELİNE GİRİŞ YAP
-                  </button>
-                )}
-                <div className="text-[9px] text-emerald-500 font-bold uppercase tracking-widest">SİSTEME GÜVENLİ ERİŞİM SAĞLANDI</div>
-              </div>
-            ) : (
+          <div className="flex-1 flex justify-center lg:justify-end">
+            {!user && (
               <LoginForm />
             )}
           </div>

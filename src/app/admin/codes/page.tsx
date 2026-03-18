@@ -71,30 +71,25 @@ export default function CodeManagement() {
     setLoading(true);
     setSuccessMsg('');
     try {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let r1 = '';
-      for (let i = 0; i < 4; i++) r1 += chars.charAt(Math.floor(Math.random() * chars.length));
-      const r2 = chars.charAt(Math.floor(Math.random() * chars.length));
-      const result = `TB-${r1}-${r2}`;
-      
-      // Firebase'e veri ekleme
-      const docRef = await addDoc(collection(db, "codes"), {
-        code: result,
-        user: 'YÖNETİCİ GENEL',
-        status: 'Aktif',
-        payment: 'MANUEL',
-        createdAt: serverTimestamp()
+      // Arka plan API servisini çağır (Internal Background Generator)
+      const response = await fetch('/api/protocol/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'MANUEL', userEmail: 'YÖNETİCİ GENEL' })
       });
       
-      if (docRef.id) {
-         setSuccessMsg(`ANAHTAR ÜRETİLDİ: ${result}`);
+      const data = await response.json();
+      
+      if (data.success) {
+         setSuccessMsg(`ANAHTAR ARKA PLANDA ÜRETİLDİ: ${data.code}`);
          await fetchCodes();
-         // Listeyi temiz gösterip yeni kodu öne çıkarmak için 3 saniye sonra mesajı kaldır
          setTimeout(() => setSuccessMsg(''), 5000);
+      } else {
+        throw new Error(data.error);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Kod üretim hatası:", err);
-      alert("Hata: Kod veritabanına yazılamadı. Bağlantıyı kontrol edin.");
+      alert("Hata: " + err.message);
     } finally {
       setLoading(false);
     }

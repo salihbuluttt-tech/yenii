@@ -74,22 +74,19 @@ export default function AdminDashboard() {
   const handleGenerateCode = async () => {
     setLoading(true);
     try {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let r1 = '';
-      for (let i = 0; i < 4; i++) r1 += chars.charAt(Math.floor(Math.random() * chars.length));
-      const newCode = `TB-${r1}-${chars.charAt(Math.floor(Math.random() * chars.length))}`;
-      
-      const docRef = await addDoc(collection(db, "codes"), {
-        code: newCode,
-        user: "Yön. Panel (Hızlı)",
-        status: "Aktif",
-        payment: "Manuel",
-        createdAt: serverTimestamp()
+      const response = await fetch('/api/protocol/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'HIZLI_YONETICI', userEmail: 'Admin (Hızlı)' })
       });
+      
+      const data = await response.json();
 
-      if (docRef.id) {
-        alert(`KOD ÜRETİLDİ: ${newCode}\nListe Güncelleniyor.`);
+      if (data.success) {
+        alert(`KOD ARKA PLANDA ÜRETİLDİ: ${data.code}\nListe Güncelleniyor.`);
         await fetchData();
+      } else {
+        throw new Error(data.error);
       }
     } catch (err: any) {
        console.error("Kod üretim hatası:", err);

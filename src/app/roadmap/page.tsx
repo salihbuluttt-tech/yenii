@@ -43,7 +43,7 @@ export default function RoadmapPage() {
       number: "02",
       title: "DAVET GÖNDERİN",
       subtitle: "Güvenli Masa Oluşturma",
-      description: "Eğer karşılıklı bir işlem (Mutabakat, NDA vb.) yapıyorsanız, sistemin size özel ürettiği Davet Kodu'nu karşı tarafa iletin. Masa her iki taraf bağlandığında aktifleşir.",
+      description: "Eğer bir hizmet için (NDA, Yer Gösterme vb.) davet gerekiyorsa, sistemin size özel ürettiği Davet Kodu'nu karşı tarafa iletin. Masa her iki taraf bağlandığında aktifleşir.",
       Icon: Send,
       color: "from-primary/20 to-primary/5",
       iconColor: "text-primary"

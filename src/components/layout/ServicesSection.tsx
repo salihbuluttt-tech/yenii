@@ -12,13 +12,6 @@ import {
 export const ServicesSection = () => {
   const services = [
     {
-      title: "Karşılıklı Mutabakat",
-      description: "Alıcı ve satıcı belgelerinin AI ile çapraz kontrolü ve güvenli eşleşme raporu.",
-      Icon: Users,
-      iconColor: "text-indigo-400",
-      href: "/services/mutabakat"
-    },
-    {
       title: "Tek Taraflı Doğrulama",
       description: "Kendi belgenizi (Tapu, Yetki vb.) yükleyip AI mühürlü teyit raporu oluşturun.",
       Icon: ShieldCheck,
