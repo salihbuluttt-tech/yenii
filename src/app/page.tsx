@@ -1,16 +1,29 @@
+"use client";
+
 import { Navbar } from "@/components/layout/Navbar";
 import { LoginForm } from "@/components/ui/LoginForm";
 import { ServicesSection } from "@/components/layout/ServicesSection";
 import { OperationGuide } from "@/components/layout/OperationGuide";
 import { SecurityProtocol } from "@/components/layout/SecurityProtocol";
-import { Shield, Zap } from "lucide-react";
+import { Shield, Zap, Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen relative bg-[#0a0a0c]">
       <Navbar />
       
-      {/* Hero Section */}
+      {/* Hero & Login Section */}
       <section className="container mx-auto px-6 pt-32 pb-32 flex flex-col lg:flex-row items-center justify-between gap-12">
         <div className="flex-1 space-y-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest">
@@ -19,7 +32,7 @@ export default function Home() {
           </div>
           
           <div className="space-y-4">
-            <h1 className="text-6xl md:text-8xl font-bold leading-[0.9] tracking-tighter">
+            <h1 className="text-6xl md:text-8xl font-bold leading-[0.9] tracking-tighter text-white">
               Emlak <br />
               <span className="premium-gradient">Dünyasında</span><br />
               <span className="text-primary">Yeni Standart.</span>
@@ -29,39 +42,67 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-4 pt-4">
-            <div className="glass-card px-6 py-4 flex items-center gap-4 bg-white/5 border-white/5">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-emerald-400" />
+          {!user && (
+            <div className="flex flex-wrap gap-4 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              <div className="glass-card px-6 py-4 flex items-center gap-4 bg-white/5 border-white/5">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold uppercase text-white">RAM-Only Protokolü</div>
+                  <div className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Veriler Asla Saklanmaz</div>
+                </div>
               </div>
-              <div>
-                <div className="text-sm font-bold uppercase">RAM-Only Protokolü</div>
-                <div className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Veriler Asla Saklanmaz</div>
+              
+              <div className="glass-card px-6 py-4 flex items-center gap-4 bg-white/5 border-white/5">
+                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold uppercase text-white">Anlık Teyit</div>
+                  <div className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Saniyeler İçinde Rapor</div>
+                </div>
               </div>
             </div>
-            
-            <div className="glass-card px-6 py-4 flex items-center gap-4 bg-white/5 border-white/5">
-              <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-amber-400" />
-              </div>
-              <div>
-                <div className="text-sm font-bold uppercase">Anlık Teyit</div>
-                <div className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Saniyeler İçinde Rapor</div>
+          )}
+
+          {user && (
+            <div className="pt-8">
+              <div className="glass-card p-6 border-emerald-500/20 bg-emerald-500/5 inline-flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-white">Hoş Geldiniz!</div>
+                  <div className="text-sm text-white/50">Erişim protokolü doğrulandı. Aşağıdaki araçları kullanabilirsiniz.</div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="flex-1 flex justify-center lg:justify-end">
-          <LoginForm />
+          {user ? (
+             <div className="w-full max-w-md glass-card p-8 border-primary/20 bg-primary/5 text-center space-y-4">
+                <h3 className="text-xl font-bold text-white">Profil Durumu</h3>
+                <p className="text-sm text-white/40">{user.email}</p>
+                <div className="py-4 px-6 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest">
+                  AKTİF OTURUM
+                </div>
+             </div>
+          ) : (
+            <LoginForm />
+          )}
         </div>
       </section>
 
-      <ServicesSection />
-      
-      <OperationGuide />
-      
-      <SecurityProtocol />
+      {user && (
+        <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <ServicesSection />
+          <OperationGuide />
+          <SecurityProtocol />
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="py-12 border-t border-white/5 bg-[#0a0a0c] text-center">
@@ -70,7 +111,7 @@ export default function Home() {
             <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
               <span className="text-white font-bold text-[10px]">TB</span>
             </div>
-            <span className="text-sm font-bold tracking-tight">TrustBridge</span>
+            <span className="text-sm font-bold tracking-tight text-white">TrustBridge</span>
           </div>
           <p className="text-white/20 text-xs font-medium uppercase tracking-widest">
             © 2026 TrustBridge — Güvenli Emlak Ekosistemi. Tüm hakları saklıdır.
@@ -80,3 +121,4 @@ export default function Home() {
     </main>
   );
 }
+
