@@ -38,6 +38,9 @@ export default function DogrulamaPage() {
   const [selectedDoc, setSelectedDoc] = useState<DocType>('TAPU');
   const [isScanning, setIsScanning] = useState(false);
   const [isBlurred, setIsBlurred] = useState(false);
+  
+  // Real AI Results
+  const [aiResult, setAiResult] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -50,6 +53,7 @@ export default function DogrulamaPage() {
        const session = JSON.parse(savedSession);
        setStep(session.step);
        setCompleted(session.completed || false);
+       if (session.aiResult) setAiResult(session.aiResult);
     }
   }, []);
 
@@ -58,10 +62,23 @@ export default function DogrulamaPage() {
     localStorage.setItem('tb_gate_dogrulama', 'passed');
   };
 
-  const updateSession = (newStep: number, isDone: boolean = false) => {
+  const updateSession = (newStep: number, isDone: boolean = false, extraData: any = null) => {
     setStep(newStep);
     setCompleted(isDone);
-    localStorage.setItem('tb_session_dogrulama', JSON.stringify({ step: newStep, completed: isDone }));
+    const session = { step: newStep, completed: isDone, aiResult: extraData || aiResult };
+    localStorage.setItem('tb_session_dogrulama', JSON.stringify(session));
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   const clearSession = () => {
@@ -72,17 +89,31 @@ export default function DogrulamaPage() {
     }
   };
 
-  const handleStartScan = () => {
+  const handleStartScan = async (file: File) => {
     setIsScanning(true);
     setLoading(true);
-    setTimeout(() => {
-      setIsBlurred(true);
-      setLoading(false);
-    }, 2000);
-    setTimeout(() => {
+
+    try {
+      const base64 = await fileToBase64(file);
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileBase64: base64, docType: selectedDoc })
+      });
+
+      const data = await response.json();
+      setAiResult(data);
+      
       setIsScanning(false);
-      updateSession(2);
-    }, 4500);
+      setLoading(false);
+      updateSession(2, false, data);
+
+    } catch (error) {
+      console.error('OCR Error:', error);
+      alert('AI Analiz motoruna ulaşılamadı.');
+      setIsScanning(false);
+      setLoading(false);
+    }
   };
 
   const handleConfirm = () => {
@@ -90,7 +121,7 @@ export default function DogrulamaPage() {
     setTimeout(() => {
        setLoading(false);
        updateSession(step, true);
-    }, 2500);
+    }, 2000);
   };
 
   const docTemplates = {
@@ -120,7 +151,7 @@ export default function DogrulamaPage() {
                   <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> GERİ DÖN
                </button>
                
-               {step > 1 && !completed && (
+               {(step > 1 || aiResult) && !completed && (
                   <button 
                     onClick={clearSession}
                     className="flex items-center gap-2 text-[9px] font-black text-rose-500/40 hover:text-rose-500 transition-all uppercase tracking-[0.3em]"
@@ -180,7 +211,7 @@ export default function DogrulamaPage() {
                           accept=".pdf,.jpg,.jpeg,.png"
                           onChange={(e) => {
                             if (e.target.files && e.target.files.length > 0) {
-                              handleStartScan();
+                              handleStartScan(e.target.files[0]);
                             }
                           }}
                         />
@@ -195,7 +226,7 @@ export default function DogrulamaPage() {
                                   </div>
                                   <div className="space-y-4 relative text-center">
                                     <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
-                                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em]">BELGE ANALİZ EDİLİYOR...</p>
+                                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em]">YAPAY ZEKA ANALİZ EDİYOR...</p>
                                   </div>
                               </div>
                             ) : (
@@ -224,24 +255,23 @@ export default function DogrulamaPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch animate-in slide-in-from-bottom-8 duration-700">
                         <div className="glass-card p-10 bg-black/40 border-white/5 space-y-8 relative overflow-hidden">
                           <div className="aspect-[3/4] bg-white/5 rounded-3xl relative overflow-hidden border border-white/5">
+                              {/* Visual AI Indicators */}
+                              <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent"></div>
                               <div className="absolute inset-8 border border-white/10 rounded-lg p-6 space-y-6">
-                                <div className="w-1/2 h-3 bg-white/20 rounded"></div>
+                                <div className="w-1/2 h-3 bg-primary/20 rounded animate-pulse"></div>
                                 <div className="space-y-3">
                                     <div className="w-full h-2 bg-white/10 rounded"></div>
-                                    <div className="w-3/4 h-8 bg-white/5 blur-md border border-white/10 rounded"></div>
-                                    <div className="w-full h-2 bg-white/10 rounded"></div>
-                                    <div className="w-full h-2 bg-white/10 rounded"></div>
-                                </div>
-                                <div className="absolute bottom-6 left-6 flex gap-2">
-                                    <div className="w-10 h-10 border border-white/20 rounded-lg"></div>
-                                    <div className="flex-1 space-y-2">
-                                      <div className="w-16 h-2 bg-white/20 rounded"></div>
+                                    <div className="w-3/4 h-8 bg-primary/5 border border-primary/20 rounded flex items-center px-4">
+                                      <span className="text-[8px] font-black text-primary uppercase tracking-widest">GÜVENLİ_VERİ_OK</span>
                                     </div>
+                                    <div className="w-full h-2 bg-white/10 rounded"></div>
+                                    <div className="w-full h-2 bg-white/10 rounded"></div>
                                 </div>
                               </div>
-                              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent opacity-50"></div>
                               <div className="absolute top-6 right-6">
-                                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-[8px] font-black uppercase rounded-full border border-emerald-500/20">SAHTECİLİK ANALİZİ: GÜVENLİ</span>
+                                <span className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border ${aiResult?.isValid ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/20 text-rose-400 border-rose-500/20'}`}>
+                                  {aiResult?.isValid ? `GÜVENLİ: %${aiResult?.confidence || '98'}` : 'ŞÜPHELİ BELGE'}
+                                </span>
                               </div>
                           </div>
                         </div>
@@ -250,33 +280,35 @@ export default function DogrulamaPage() {
                           <div className="glass-card p-10 bg-primary/[0.03] border-primary/10 flex-1 space-y-8 relative overflow-hidden group">
                             <div className="flex items-center gap-4">
                                 <Search className="w-5 h-5 text-primary" />
-                                <h3 className="text-lg font-black text-white uppercase italic tracking-tighter">İÇERİK_DOĞRULAMA_MATRİSİ</h3>
+                                <h3 className="text-lg font-black text-white uppercase italic tracking-tighter">AI_DOĞRULAMA_MATRİSİ</h3>
                             </div>
                             <div className="space-y-5">
                                 {[
-                                  { label: "BELGE_ADI", value: selectedDoc + "_INTERNAL_PRO" },
-                                  { label: "KARTI_NO", value: "XXXXXXXX (MASKELENDİ)" },
-                                  { label: "HUKUKİ_DİL", value: "BORÇLAR KANUNU UYUMLU" },
-                                  { label: "GEÇERLİLİK", value: "TÜM KRİRLER OK" },
+                                  { label: "TESPİT_EDİLEN_SAHİBİ", value: aiResult?.extractedData?.owner || "ANALİZ EDİLEMEDİ" },
+                                  { label: "ADA / PARSEL", value: `${aiResult?.extractedData?.ada || '-'} / ${aiResult?.extractedData?.parsel || '-'}` },
+                                  { label: "BELGE_UYUMU", value: aiResult?.isValid ? "TAM UYUMLU" : "BELİRSİZ" },
+                                  { label: "ANALİZ_NOTU", value: aiResult?.summary || "İncelendi" },
                                 ].map((item, idx) => (
                                   <div key={idx} className="flex justify-between items-center border-b border-white/5 pb-4">
-                                    <div className="text-[8px] font-black text-white/20 uppercase tracking-widest">{item.label}</div>
-                                    <div className="text-[10px] font-bold text-white uppercase tracking-widest">{item.value}</div>
+                                    <div className="text-[8px] font-black text-white/40 uppercase tracking-widest">{item.label}</div>
+                                    <div className="text-[10px] font-bold text-white uppercase tracking-widest text-right">{item.value}</div>
                                   </div>
                                 ))}
                             </div>
-                            <div className="p-5 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-1">
-                                <p className="text-[9px] text-white/40 font-bold uppercase leading-relaxed italic">
-                                  *Belge içeriğinde 3. Şahıs verisi tespit edilemedi. Rapor "KAPSAM DIŞI" ibaresiyle onaylanacaktır.
-                                </p>
-                            </div>
+                            {aiResult?.warnings && aiResult.warnings.length > 0 && (
+                              <div className="p-5 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-1">
+                                  {aiResult.warnings.map((w: string, i: number) => (
+                                    <p key={i} className="text-[9px] text-amber-200/60 font-bold uppercase leading-relaxed italic">* {w}</p>
+                                  ))}
+                              </div>
+                            )}
                           </div>
                           <button 
                             onClick={handleConfirm}
                             disabled={loading}
                             className="w-full py-6 bg-primary text-black font-black text-[11px] uppercase tracking-[0.3em] rounded-2xl shadow-3xl hover:bg-white transition-all flex items-center justify-center gap-4 active:scale-95 disabled:opacity-50"
                           >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>PROTOKOLÜ MÜHÜRLER VE İNDİRİRİM <Sparkles className="w-4 h-4" /></>}
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>VERİLERİ MÜHÜRLE VE ONAYLA <Sparkles className="w-4 h-4" /></>}
                           </button>
                         </div>
                     </div>
