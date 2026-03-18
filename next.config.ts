@@ -1,12 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone', // <--- KRİTİK AYAR: Firebase'in çalışması için bu şart
+  output: 'standalone', // <--- KRİTİK: Bu satır olmazsa Firebase çalıştıramaz
   eslint: {
-    ignoreDuringBuilds: true, // Build sırasında hata verip durmasın
+    ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true,   // TypeScript hataları yüzünden build yarıda kalmasın
+    ignoreBuildErrors: true,
   }
 };
 
