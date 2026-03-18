@@ -105,7 +105,6 @@ export default function Home() {
       {user && (
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <ServicesSection />
-          <OperationGuide />
           <SecurityProtocol />
         </div>
       )}
