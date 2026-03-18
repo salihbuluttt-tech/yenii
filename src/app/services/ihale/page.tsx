@@ -22,7 +22,8 @@ import {
   ChevronRight,
   TrendingUp,
   ArrowLeft,
-  RotateCcw
+  RotateCcw,
+  Upload
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -213,8 +214,18 @@ export default function IhalePage() {
                                  <input required value={formData.rate} onChange={(e) => setFormData({...formData, rate: e.target.value})} type="text" placeholder="%45" className="w-full bg-black/40 border border-white/10 rounded-2xl p-5 text-2xl font-black text-center text-amber-500 outline-none focus:border-amber-500/40" />
                               </div>
                               <div className="md:col-span-2 space-y-3">
-                                 <label className="text-[9px] text-white/40 pl-1 italic">REFERANS PROJELER VE WEB SİTESİ</label>
-                                 <textarea required value={formData.refs} onChange={(e) => setFormData({...formData, refs: e.target.value})} rows={3} placeholder="Daha önce bitirilen projeler ve kurumsal web adresi..." className="w-full bg-black/40 border border-white/10 rounded-2xl p-5 text-sm font-bold outline-none focus:border-amber-500/40 resize-none font-sans"></textarea>
+                                 <label className="text-[9px] text-white/40 pl-1 italic">REFERANS PROJELER VE PORTFÖY BELGESİ (PDF)</label>
+                                 <div 
+                                    onClick={() => document.getElementById('tender-upload')?.click()}
+                                    className="w-full bg-black/40 border-2 border-dashed border-white/5 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 hover:border-amber-500/40 cursor-pointer transition-all group"
+                                 >
+                                    <input type="file" id="tender-upload" className="hidden" />
+                                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-amber-500/10 transition-all">
+                                       <Upload className="w-5 h-5 text-white/20 group-hover:text-amber-500" />
+                                    </div>
+                                    <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">PROJE DOSYASINI BURAYA BIRAKIN VEYA SEÇİN</p>
+                                 </div>
+                                 <textarea required value={formData.refs} onChange={(e) => setFormData({...formData, refs: e.target.value})} rows={2} placeholder="Sözlü referans notları..." className="w-full bg-black/40 border border-white/10 rounded-2xl p-5 text-sm font-bold outline-none focus:border-amber-500/40 resize-none font-sans"></textarea>
                               </div>
                            </div>
                            <button type="submit" className="w-full py-8 bg-amber-500 text-black font-black text-[14px] uppercase tracking-[0.4em] rounded-[2.5rem] shadow-3xl hover:bg-white transition-all flex items-center justify-center gap-5 active:scale-95">{loading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "TEKLİFİ ŞİFRELE VE GÖNDER"}</button>

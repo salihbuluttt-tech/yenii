@@ -160,7 +160,21 @@ export default function DogrulamaPage() {
                     </div>
 
                     <div className="lg:col-span-2">
-                       <div className="glass-card p-12 bg-[#0d0d12] border-white/5 border-dashed border-2 min-h-[450px] flex flex-col items-center justify-center text-center space-y-8 group transition-all hover:bg-white/[0.01]">
+                       <input 
+                        type="file" 
+                        id="document-upload" 
+                        className="hidden" 
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            handleStartScan();
+                          }
+                        }}
+                       />
+                       <div 
+                        onClick={() => document.getElementById('document-upload')?.click()}
+                        className="glass-card p-12 bg-[#0d0d12] border-white/5 border-dashed border-2 min-h-[450px] flex flex-col items-center justify-center text-center space-y-8 group transition-all hover:bg-white/[0.01] cursor-pointer"
+                       >
                           {isScanning ? (
                              <div className="flex flex-col items-center space-y-8 w-full max-w-sm">
                                 <div className="w-full h-1 bg-white/5 rounded-full relative overflow-hidden">
@@ -173,18 +187,17 @@ export default function DogrulamaPage() {
                              </div>
                           ) : (
                              <>
-                                <div className="w-20 h-20 rounded-[2rem] bg-primary/20 flex items-center justify-center shadow-3xl shadow-primary/10">
+                                <div className="w-20 h-20 rounded-[2rem] bg-primary/20 flex items-center justify-center shadow-3xl shadow-primary/10 group-hover:scale-110 transition-transform">
                                    <Upload className="w-8 h-8 text-primary" />
                                 </div>
                                 <div className="space-y-2">
                                    <h3 className="text-xl font-black text-white uppercase italic">OTOMATİK TARAMA</h3>
-                                   <p className="text-[9px] text-white/10 font-bold uppercase tracking-[0.2em] max-w-xs mx-auto">Dosyayı sürükleyin veya <span className="text-white/40">Gözat</span></p>
+                                   <p className="text-[9px] text-white/10 font-bold uppercase tracking-[0.2em] max-w-xs mx-auto italic">Dosyayı sürükleyin veya <span className="text-primary underline">Gözat</span></p>
                                 </div>
                                 <button 
-                                 onClick={handleStartScan}
                                  className="px-10 py-5 bg-white text-black font-black text-[9px] uppercase tracking-[0.3em] rounded-xl hover:bg-primary transition-all active:scale-95 shadow-2xl"
                                 >
-                                  ANALİZİ BAŞLAT
+                                  DOSYA SEÇİNİZ
                                 </button>
                              </>
                           )}
