@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { LoginForm } from "@/components/ui/LoginForm";
 import { ServicesSection } from "@/components/layout/ServicesSection";
@@ -10,8 +11,13 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const [mounted, setMounted] = React.useState(false);
 
-  if (loading) {
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
