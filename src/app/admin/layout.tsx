@@ -1,19 +1,61 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Key, 
   Users, 
   Settings, 
   LogOut,
-  ShieldAlert
+  ShieldAlert,
+  Loader2,
+  Lock
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+
+  // Admin kontrolü (kullanıcı adı admin ise e-posta admin@trustbridge.com olur)
+  const isAdmin = user?.email === 'admin@trustbridge.com';
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0c] flex flex-col items-center justify-center p-6 text-center space-y-6">
+        <div className="w-20 h-20 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+          <Lock className="w-10 h-10 text-rose-500" />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-black text-white">YETKİSİZ ERİŞİM</h1>
+          <p className="text-white/40 max-w-sm mx-auto uppercase text-xs font-bold tracking-[0.2em] leading-relaxed">
+            Bu alan sadece sistem yetkilileri içindir. Lütfen uygun bir hesapla giriş yapın veya ana sayfaya dönün.
+          </p>
+        </div>
+        <Link 
+          href="/" 
+          className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white"
+        >
+          ANA SAYFAYA DÖN
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white flex">
       {/* Sidebar */}
@@ -23,7 +65,7 @@ export default function AdminLayout({
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-bold text-sm">
               TB
             </div>
-            <span className="font-bold tracking-tight">TrustBridge <span className="text-white/40 text-[10px] uppercase">Admin</span></span>
+            <span className="font-bold tracking-tight">TrustBridge <span className="text-white/40 text-[10px] uppercase font-black">Admin</span></span>
           </Link>
         </div>
 
@@ -59,7 +101,13 @@ export default function AdminLayout({
             <Settings className="w-4 h-4 text-primary/60 group-hover:text-primary" />
             Ayarlar
           </Link>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-rose-500/10 transition-colors text-sm font-medium text-rose-500 group">
+          <button 
+            onClick={() => {
+              logout();
+              router.push('/');
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-rose-500/10 transition-colors text-sm font-medium text-rose-500 group"
+          >
             <LogOut className="w-4 h-4" />
             Çıkış Yap
           </button>
@@ -75,8 +123,8 @@ export default function AdminLayout({
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <div className="text-xs font-bold">Admin</div>
-              <div className="text-[10px] text-white/40 uppercase font-black">Süper Yetkili</div>
+              <div className="text-xs font-bold text-white">Yönetici</div>
+              <div className="text-[10px] text-white/40 uppercase font-black">{user?.email}</div>
             </div>
             <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center font-bold text-primary">
               A
@@ -91,3 +139,4 @@ export default function AdminLayout({
     </div>
   );
 }
+

@@ -17,7 +17,9 @@ export const LoginForm = () => {
     setLoading(true);
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      // Eğer kullanıcı adı "admin" ise otomatik olarak email formatına çeviriyoruz
+      const loginEmail = email.toLowerCase() === 'admin' ? 'admin@trustbridge.com' : email;
+      await signInWithEmailAndPassword(auth, loginEmail, password);
     } catch (err: any) {
       setError("Geçersiz e-posta veya şifre.");
       console.error(err);
