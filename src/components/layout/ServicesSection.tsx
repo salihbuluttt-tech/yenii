@@ -15,38 +15,45 @@ export const ServicesSection = () => {
       title: "Karşılıklı Mutabakat",
       description: "Alıcı ve satıcı belgelerinin AI ile çapraz kontrolü ve güvenli eşleşme raporu.",
       Icon: Users,
-      iconColor: "text-indigo-400"
+      iconColor: "text-indigo-400",
+      href: "/services/mutabakat"
     },
     {
       title: "Tek Taraflı Doğrulama",
       description: "Kendi belgenizi (Tapu, Yetki vb.) yükleyip AI mühürlü teyit raporu oluşturun.",
       Icon: ShieldCheck,
-      iconColor: "text-emerald-400"
+      iconColor: "text-emerald-400",
+      href: "/services/dogrulama"
     },
     {
       title: "Dijital Yer Gösterme",
       description: "GPS mühürlü ve dijital imzalı, resmi geçerliliği olan yer gösterme formu.",
       Icon: MapPin,
-      iconColor: "text-amber-400"
+      iconColor: "text-amber-400",
+      href: "/services/yer-gosterme"
     },
     {
       title: "Hızlı NDA",
       description: "Hassas görüşmeler öncesi saniyeler içinde AI destekli gizlilik sözleşmesi.",
       Icon: FileText,
-      iconColor: "text-rose-400"
+      iconColor: "text-rose-400",
+      href: "/services/nda"
     },
     {
       title: "Dijital Yetki Belgesi",
       description: "Mülk sahiplerinden emlakçılara süreli ve kapsamlı resmi yetki ataması.",
       Icon: Key,
-      iconColor: "text-zinc-400"
+      iconColor: "text-zinc-400",
+      href: "/services/yetki"
     },
     {
       title: "Proje İhale Paneli",
       description: "Müteahhit tekliflerini toplama ve AI ile en avantajlı olanı analiz etme.",
       Icon: Building2,
-      iconColor: "text-sky-400"
+      iconColor: "text-sky-400",
+      href: "/services/ihale"
     }
+
   ];
 
   return (
