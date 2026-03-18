@@ -6,11 +6,14 @@ import { Mail, Lock, LogIn, Shield, Loader2, AlertCircle } from 'lucide-react';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
+import { useRouter } from 'next/navigation';
+
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +22,12 @@ export const LoginForm = () => {
     try {
       // Eğer kullanıcı adı "admin" ise otomatik olarak email formatına çeviriyoruz
       const loginEmail = email.toLowerCase() === 'admin' ? 'admin@trustbridge.com' : email;
-      await signInWithEmailAndPassword(auth, loginEmail, password);
+      const userCredential = await signInWithEmailAndPassword(auth, loginEmail, password);
+      
+      // Eğer giriş yapan kişi admin ise doğrudan admin paneline gönderiyoruz
+      if (userCredential.user.email === 'admin@trustbridge.com') {
+        router.push('/admin');
+      }
     } catch (err: any) {
       setError("Geçersiz e-posta veya şifre.");
       console.error(err);
@@ -33,7 +41,12 @@ export const LoginForm = () => {
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      
+      // Google ile giren de admin ise admin paneline gönderiyoruz
+      if (userCredential.user.email === 'admin@trustbridge.com') {
+        router.push('/admin');
+      }
     } catch (err: any) {
       setError("Google ile giriş yapılamadı.");
       console.error(err);
@@ -62,12 +75,12 @@ export const LoginForm = () => {
 
         <form className="space-y-4" onSubmit={handleEmailLogin}>
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-white/40 uppercase tracking-widest pl-1">E-POSTA</label>
+            <label className="text-xs font-semibold text-white/40 uppercase tracking-widest pl-1">GİRİŞ KİMLİĞİ</label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
               <input 
-                type="email" 
-                placeholder="ornek@mail.com"
+                type="text" 
+                placeholder="E-posta veya Kullanıcı Adı"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -134,13 +147,6 @@ export const LoginForm = () => {
         <p className="text-center text-[10px] text-white/20 font-bold uppercase tracking-[0.2em] pt-2">
           GÜVENLİ ERİŞİM PROTOKOLÜ AKTİF
         </p>
-      </div>
-
-      {/* Admin Panel Link */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 opacity-10 hover:opacity-50 transition-opacity">
-        <Link href="/admin" className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-1 font-bold text-white">
-          <Shield className="w-3 h-3" /> YÖNETİCİ ERİŞİMİ
-        </Link>
       </div>
     </div>
   );
