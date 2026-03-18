@@ -98,19 +98,28 @@ export default function DogrulamaPage() {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileBase64: base64, docType: selectedDoc })
+        body: JSON.stringify({ 
+          fileBase64: base64, 
+          docType: selectedDoc,
+          mimeType: file.type // Gerçek dosya tipi (Örn: image/png, application/pdf)
+        })
       });
 
       const data = await response.json();
+      
+      if (data.error) {
+         throw new Error(data.error);
+      }
+
       setAiResult(data);
       
       setIsScanning(false);
       setLoading(false);
       updateSession(2, false, data);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('OCR Error:', error);
-      alert('AI Analiz motoruna ulaşılamadı.');
+      alert('Analiz Hatası: ' + error.message);
       setIsScanning(false);
       setLoading(false);
     }

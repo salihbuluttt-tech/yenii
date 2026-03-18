@@ -2,25 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { fileBase64, docType } = await req.json();
+    const { fileBase64, docType, mimeType } = await req.json();
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API Key is missing' }, { status: 500 });
+      console.error("ANALYSIS_ERROR: API Key is missing in environment");
+      return NextResponse.json({ error: 'Sistem yetkilendirme hatası (API Key Eksik)' }, { status: 500 });
     }
 
-    const prompt = `Sen bir resmi belge doğrulama uzmanı yapay zekasın. Maddeler halinde verilen şu analizi yap:
-    1. Yüklenen belge bir ${docType} mi?
-    2. Belgedeki QR kod, mühür ve imza alanları tespit edildi mi?
-    3. Belge üzerindeki kritik verileri (Ada, Parsel, İsim vb.) ayıkla.
-    4. Belgenin sahteliğine dair bir şüphe var mı?
-    
-    Yanıtı şu JSON formatında ver:
+    // Determine the MIME type (default to image/jpeg if not provided)
+    const activeMime = mimeType || "image/jpeg";
+
+    const prompt = `Sen profesyonel bir resmi belge doğrulama uzmanısın. Yüklenen bu ${docType} belgesini analiz et.
+    Yapısal Kurallar:
+    1. Belgenin sahte olup olmadığını (% güven ile) belirle.
+    2. Belgedeki Ada, Parsel, İsim ve Tarih bilgilerini ayıkla.
+    3. Analiz sonucunu mutlaka şu JSON formatında ver, başka hiçbir yazı yazma:
     {
       "isValid": boolean,
       "confidence": number,
-      "extractedData": { "ada": "...", "parsel": "...", "owner": "...", "date": "..." },
-      "summary": "Tek cümlelik profesyonel özet",
+      "extractedData": { "ada": "ADA_NO", "parsel": "PARSEL_NO", "owner": "ISIM", "date": "TARIH" },
+      "summary": "Analiz özeti",
       "warnings": ["uyarı 1", "uyarı 2"]
     }`;
 
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
             { text: prompt },
             {
               inlineData: {
-                mimeType: "image/jpeg", // Varsayılan olarak resim kabul ediyoruz, frontend'den gelen mimeType da basılabilir
+                mimeType: activeMime,
                 data: fileBase64
               }
             }
@@ -46,12 +48,30 @@ export async function POST(req: NextRequest) {
     });
 
     const data = await response.json();
-    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
+    if (data.error) {
+       console.error("GEMINI_API_ERROR:", data.error);
+       return NextResponse.json({ error: 'AI Motoru hatası: ' + data.error.message }, { status: 500 });
+    }
+
+    let resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    // Markdown temizliği (Eğer ```json ... ``` gelirse)
+    if (resultText && resultText.includes('```')) {
+      resultText = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
+    }
+
+    if (!resultText) {
+      return NextResponse.json({ error: 'Yapay zeka analiz sonucu boş döndü.' }, { status: 500 });
+    }
+
     return NextResponse.json(JSON.parse(resultText));
 
-  } catch (error) {
-    console.error('AI Analysis Error:', error);
-    return NextResponse.json({ error: 'Failsafe: Analiz motorunda hata oluştu.' }, { status: 500 });
+  } catch (error: any) {
+    console.error('SYSTEM_FATAL_ERROR:', error);
+    return NextResponse.json({ 
+      error: 'Analiz motoru mühürlenemedi.',
+      details: error.message 
+    }, { status: 500 });
   }
 }
