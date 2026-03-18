@@ -1,0 +1,16 @@
+[debug] [2026-03-18T00:42:36.719Z] ----------------------------------------------------------------------
+[debug] [2026-03-18T00:42:36.730Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\k\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-03-18T00:42:36.731Z] CLI Version:   15.10.1
+[debug] [2026-03-18T00:42:36.732Z] Platform:      win32
+[debug] [2026-03-18T00:42:36.732Z] Node Version:  v24.14.0
+[debug] [2026-03-18T00:42:36.732Z] Time:          Wed Mar 18 2026 03:42:36 GMT+0300 (Türkiye Standart Saati)
+[debug] [2026-03-18T00:42:36.733Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-18T00:42:40.977Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-18T00:42:40.978Z] > authorizing via signed-in user (salihbulutt@gmail.com)
+[debug] [2026-03-18T00:42:40.978Z] [iam] checking project emlak-849cf for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-18T00:42:40.979Z] Checked if tokens are valid: true, expires at: 1773797772961
+[debug] [2026-03-18T00:42:40.980Z] Checked if tokens are valid: true, expires at: 1773797772961
+[debug] [2026-03-18T00:42:40.981Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/emlak-849cf:testIamPermissions [none]
+[debug] [2026-03-18T00:42:40.981Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/emlak-849cf:testIamPermissions  x-goog-user-project=emlak-849cf
+[debug] [2026-03-18T00:42:40.981Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/emlak-849cf:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
